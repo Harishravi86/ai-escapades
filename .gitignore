@@ -1,0 +1,8 @@
+# Secrets
+secret.key
+encrypted_password.bin
+.env
+
+# Python
+__pycache__/
+*.pyc
