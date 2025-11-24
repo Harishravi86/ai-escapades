@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQQ Strategy Performance</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="qqq">QQQ Strategy</button>
+                <button class="tab-btn" data-tab="spy">SPY Strategy</button>
+            </div>
+            <h1 id="page-title">QQQ Strategy <span class="highlight">Performance</span></h1>
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats will be injected here -->
+            </div>
+        </header>
+
+        <main>
+            <section class="chart-section">
+                <h2>Equity Curve</h2>
+                <div class="chart-container">
+                    <canvas id="equityChart"></canvas>
+                </div>
+            </section>
+
+            <section class="trades-section">
+                <h2>Trade History</h2>
+                <div class="table-container">
+                    <table id="trades-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Action</th>
+                                <th>Price</th>
+                                <th>Shares</th>
+                                <th>Value</th>
+                                <th>Return</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Trades will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

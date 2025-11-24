@@ -1,8 +1,29 @@
+# Data
+*.csv
+*.xlsx
+*.json
+!ui/data.json
+
 # Secrets
-secret.key
-encrypted_password.bin
 .env
+*.key
+*.bin
+*.pem
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+env/
+venv/
+
+# Logs
+*.log
+*.txt
+!optimized_params.txt
+
+# OS
+.DS_Store
+Thumbs.db

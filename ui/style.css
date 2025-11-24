@@ -1,0 +1,208 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-color: #38bdf8;
+    --success-color: #4ade80;
+    --danger-color: #f87171;
+    --border-color: #334155;
+}
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background: #334155;
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background: var(--accent-color);
+    color: #0f172a;
+    border-color: var(--accent-color);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+}
+
+.highlight {
+    color: var(--accent-color);
+    background: linear-gradient(120deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0) 100%);
+    padding: 0 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.chart-section {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 3rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.trades-section {
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.trades-section h2 {
+    padding: 2rem 2rem 0 2rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    padding: 2rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+th {
+    text-align: left;
+    padding: 1rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.action-buy {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.action-sell {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.positive {
+    color: var(--success-color);
+}
+
+.negative {
+    color: var(--danger-color);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
