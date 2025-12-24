@@ -576,7 +576,8 @@
             trailLength: 150,
             lastFrame: 0,
             history: {}, // For trails
-            events: []
+            events: [],
+            lastScannedDecade: null
         };
 
         // --- CORE PHYSICS ENGINE ---
@@ -668,8 +669,8 @@
             // Initialize history arrays
             Object.keys(PLANETS).forEach(k => state.history[k] = []);
 
-            // Calculate events cache (Sun-Saturn & Moon-Uranus)
-            precalcEvents();
+            // Initial scan based on starting date
+            scanEventsForView(0);
 
             // Init Date Picker
             document.getElementById('datePicker').value = J2000.toISOString().split('T')[0];
@@ -922,47 +923,12 @@
             document.onmousemove = null;
         }
 
-        // --- EVENTS ENGINE ---
-        // Pre-calculate ~100 years of oppositions for the list
+        // --- EVENTS ENGINE --- (REPLACED BY DYNAMIC SCANNER)
+        /*
         function precalcEvents() {
-            state.events = [];
-            // We scan every 2 days to find peaks
-            // Optimization: Just scan 2020-2030 for demo, or based on range
-            const start = -2000; // ~1995
-            const end = 12000;   // ~2033
-
-            let wasSunOpp = false;
-            let wasMoonOpp = false;
-
-            for (let d = start; d < end; d += 1) {
-                // Sun Sat
-                const pSun = calculateScreenCoords('Sun', d);
-                const pSat = calculateScreenCoords('Saturn', d);
-                // Note: calculateScreenCoords depends on View, but Logic shouldn't.
-                // Re-using internal logic for speed:
-                const s1 = (getGeoPos('Sun', d).x); // Simplified check not implemented for speed
-                // Let's rely on simple angular math:
-                const sunA = (PLANETS.Sun.lon + 0.9856 * d) % 360;
-                const satA = (PLANETS.Saturn.lon + 0.033 * d) % 360;
-                const diffS = Math.abs(sunA - satA) % 180; // Rough helio conj/opp
-
-                // Real Oppositions require Geo coords. 
-                // Let's just generate some "Mock" Perfect data for the UI based on sine waves for performance in this single file
-                // A real app would use a heavy ephemeris library
-
-                // Mocking accurate dates for demo purposes:
-                // Sun-Saturn opp happens every ~378 days
-                if ((d - 100) % 378 < 1.5) {
-                    state.events.push({ d: d, type: 'sun', label: 'Sun-Saturn Opposition', color: 'sun' });
-                }
-
-                // Moon-Uranus every ~27 days
-                if ((d) % 27.3 < 1) {
-                    state.events.push({ d: d, type: 'moon', label: 'Moon-Uranus Conj/Opp', color: 'moon' });
-                }
-            }
-            renderEvents();
+           // Legacy removed
         }
+        */
 
         function renderEvents() {
             const filter = document.getElementById('eventFilter').value;
@@ -1084,9 +1050,64 @@
             }
         }
 
+        // --- DYNAMIC EVENT SCANNER ---
+
+        function scanEventsForView(currentDay) {
+            const date = new Date(J2000.getTime() + currentDay * 86400000);
+            const currentYear = date.getFullYear();
+            const decade = Math.floor(currentYear / 10) * 10;
+
+            // Optimization: Only re-scan if we've moved to a new decade
+            if (state.lastScannedDecade === decade) return;
+            state.lastScannedDecade = decade;
+
+            console.log(`Scanning events for the ${decade}s...`);
+            state.events = [];
+
+            // Calculate start/end days for this decade relative to J2000
+            const startMs = new Date(decade, 0, 1).getTime();
+            const endMs = new Date(decade + 10, 0, 1).getTime();
+            const startD = (startMs - J2000.getTime()) / 86400000;
+            const endD = (endMs - J2000.getTime()) / 86400000;
+
+            // Scan the decade
+            for (let d = startD; d < endD; d += 2) { // Step 2 days for speed
+                // Sun-Saturn Opposition (Earth between Sun and Saturn)
+                // We use simple longitude math for speed here
+                const sunLon = (PLANETS.Sun.lon + (360 * d / 365.25)) % 360;
+                const satLon = (PLANETS.Saturn.lon + (360 * d / 10759)) % 360;
+                const diff = Math.abs(sunLon - satLon);
+
+                // Check for Opposition (180)
+                if (Math.abs(diff - 180) < 1.5) {
+                    // Check if we already added a nearby event (deduplication)
+                    if (!state.events.some(e => Math.abs(e.d - d) < 10 && e.type === 'sun')) {
+                        state.events.push({ d: d, type: 'sun', label: 'Sun-Saturn Opposition', color: 'sun' });
+                    }
+                }
+
+                // Moon-Uranus (Every 27 days) - Only scan if not too many events
+                if (state.events.length < 50) {
+                    const moonLon = (PLANETS.Moon.lon + (360 * d / 27.32)) % 360;
+                    const uraLon = (PLANETS.Uranus.lon + (360 * d / 30685)) % 360;
+                    const diffM = Math.abs(moonLon - uraLon);
+                    if (diffM < 2 || Math.abs(diffM - 180) < 2) {
+                        if (!state.events.some(e => Math.abs(e.d - d) < 5 && e.type === 'moon')) {
+                            state.events.push({ d: d, type: 'moon', label: 'Moon-Uranus Align', color: 'moon' });
+                        }
+                    }
+                }
+            }
+
+            // Sort chronologically
+            state.events.sort((a, b) => a.d - b.d);
+            renderEvents();
+        }
+
         // Hook analysis into the render loop so it updates as you play
         const originalRender = render;
         render = function () {
+            scanEventsForView(state.days);
             originalRender();
             // Only analyze every 5 frames to save CPU
             if (Math.floor(state.days) % 5 === 0 || !state.playing) {
