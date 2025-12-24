@@ -1,120 +1,390 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Celestial Simulator v5 - Vector Physics Engine</title>
     <style>
-        :root { --bg-color: #050510; --card-bg: #1a1a2e; --accent: #3b82f6; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            background: #02020a; 
-            color: #e2e8f0; 
+        :root {
+            --bg-color: #050510;
+            --card-bg: #1a1a2e;
+            --accent: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #02020a;
+            color: #e2e8f0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             padding: 12px;
             overflow-x: hidden;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
-        
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
         /* Layout */
-        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        @media (min-width: 1024px) { .grid { grid-template-columns: 3fr 1fr; } }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: 3fr 1fr;
+            }
+        }
 
         /* UI Components */
-        .card { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid #2d2d42; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        .header { text-align: center; margin-bottom: 16px; position: relative; }
-        .header h1 { font-size: 24px; font-weight: 700; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #2d2d42;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         /* Controls */
         button {
-            padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
-            transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        button:hover { filter: brightness(1.2); transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-        
-        .btn-primary { background: #3b82f6; color: white; box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3); }
-        .btn-secondary { background: #334155; color: #cbd5e1; }
-        .btn-yellow { background: #b45309; color: white; }
-        .btn-cyan { background: #0e7490; color: white; }
-        .btn-outline { background: transparent; border: 1px solid #475569; color: #94a3b8; }
-        .btn-outline.active { background: #3b82f6; border-color: #3b82f6; color: white; }
 
-        input, select {
-            padding: 6px 10px; border: 1px solid #334155; border-radius: 6px;
-            background: #0f172a; color: white; font-size: 13px; outline: none;
+        button:hover {
+            filter: brightness(1.2);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .btn-yellow {
+            background: #b45309;
+            color: white;
+        }
+
+        .btn-cyan {
+            background: #0e7490;
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+        }
+
+        .btn-outline.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        input,
+        select {
+            padding: 6px 10px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            background: #0f172a;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            color-scheme: dark;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(1);
+            opacity: 0.6;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
         }
 
         /* Displays */
         .date-display {
-            font-size: 28px; font-family: 'Courier New', monospace; font-weight: bold;
-            text-align: center; padding: 12px; background: #0f172a; border-radius: 8px;
-            margin-bottom: 12px; border: 1px solid #1e293b;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
+            font-size: 28px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
-        .era-badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
-        
+
+        .era-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-family: sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         /* Visualization Area */
-        .sim-container { position: relative; aspect-ratio: 1/1; max-height: 600px; margin: 0 auto; }
+        .sim-container {
+            position: relative;
+            aspect-ratio: 1/1;
+            max-height: 600px;
+            margin: 0 auto;
+        }
+
         .orbital-container {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             background: radial-gradient(circle at center, #1e1e2f 0%, #050510 70%);
-            border-radius: 50%; border: 1px solid #2d2d42;
-            position: relative; overflow: hidden;
+            border-radius: 50%;
+            border: 1px solid #2d2d42;
+            position: relative;
+            overflow: hidden;
         }
 
         /* SVG Elements */
-        text { font-family: sans-serif; pointer-events: none; text-shadow: 0 2px 4px black; }
-        .planet-circle { transition: r 0.2s; cursor: pointer; }
-        .planet-circle:hover { r: 8 !important; stroke: white; stroke-width: 2px; }
-        .orbit-path { fill: none; stroke: #334155; stroke-width: 1; stroke-dasharray: 4,4; opacity: 0.3; }
-        .trail { fill: none; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; mix-blend-mode: screen; }
+        text {
+            font-family: sans-serif;
+            pointer-events: none;
+            text-shadow: 0 2px 4px black;
+        }
+
+        .planet-circle {
+            transition: r 0.2s;
+            cursor: pointer;
+        }
+
+        .planet-circle:hover {
+            r: 8 !important;
+            stroke: white;
+            stroke-width: 2px;
+        }
+
+        .orbit-path {
+            fill: none;
+            stroke: #334155;
+            stroke-width: 1;
+            stroke-dasharray: 4, 4;
+            opacity: 0.3;
+        }
+
+        .trail {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
 
         /* Sidebar Elements */
-        .panel-section { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #2d2d42; }
-        .panel-section:last-child { border: none; }
-        .panel-title { font-size: 12px; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
-
-        .sep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .sep-box { background: #0f172a; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #1e293b; transition: all 0.3s; }
-        .sep-box.active { border-color: #fbbf24; background: rgba(251, 191, 36, 0.1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.1); }
-        .sep-val { font-size: 20px; font-family: monospace; font-weight: bold; }
-        
-        .event-list { max-height: 300px; overflow-y: auto; padding-right: 4px; }
-        .event-item { 
-            padding: 8px; margin-bottom: 4px; border-radius: 4px; cursor: pointer; 
-            display: flex; justify-content: space-between; font-size: 12px; background: #222238;
-            border-left: 2px solid transparent; transition: all 0.2s;
+        .panel-section {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #2d2d42;
         }
-        .event-item:hover { background: #2d2d48; transform: translateX(2px); }
-        .event-item.active { background: #312e81; border-left-color: #818cf8; }
-        .event-item.sun { border-left-color: #fbbf24; }
-        .event-item.moon { border-left-color: #22d3ee; }
+
+        .panel-section:last-child {
+            border: none;
+        }
+
+        .panel-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .sep-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .sep-box {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #1e293b;
+            transition: all 0.3s;
+        }
+
+        .sep-box.active {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
+        }
+
+        .sep-val {
+            font-size: 20px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .event-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .event-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            background: #222238;
+            border-left: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .event-item:hover {
+            background: #2d2d48;
+            transform: translateX(2px);
+        }
+
+        .event-item.active {
+            background: #312e81;
+            border-left-color: #818cf8;
+        }
+
+        .event-item.sun {
+            border-left-color: #fbbf24;
+        }
+
+        .event-item.moon {
+            border-left-color: #22d3ee;
+        }
 
         /* Tooltip */
         #tooltip {
-            position: absolute; pointer-events: none; background: rgba(0,0,0,0.8); 
-            border: 1px solid #475569; padding: 6px 10px; border-radius: 4px; 
-            font-size: 11px; color: white; z-index: 100; opacity: 0; transition: opacity 0.2s;
+            position: absolute;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: white;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
         /* Timeline */
-        input[type=range] { width: 100%; height: 6px; background: #334155; border-radius: 3px; -webkit-appearance: none; cursor: pointer; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #3b82f6; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(59,130,246,0.5); margin-top: -5px; }
-        input[type=range]::-moz-range-track { width: 100%; height: 6px; background: #334155; border-radius: 3px; }
+        input[type=range] {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            margin-top: -5px;
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+        }
 
         /* Retrograde Indicator */
-        .retro-badge { font-size: 10px; background: #ef4444; color: white; padding: 1px 4px; border-radius: 3px; opacity: 0; transition: opacity 0.3s; }
-        .retro-badge.visible { opacity: 1; }
+        .retro-badge {
+            font-size: 10px;
+            background: #ef4444;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .retro-badge.visible {
+            opacity: 1;
+        }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -125,7 +395,8 @@
 
         <div class="grid">
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                     <div style="display: flex; gap: 4px;">
                         <button class="btn-outline active" id="viewGeo" onclick="setViewMode('geo')">Geocentric</button>
                         <button class="btn-outline" id="viewHelio" onclick="setViewMode('helio')">Heliocentric</button>
@@ -152,8 +423,11 @@
                         <svg id="solarSystem" viewBox="0 0 1000 1000" style="width: 100%; height: 100%;">
                             <defs>
                                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                                    <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
                                 </filter>
                                 <radialGradient id="sunGradient">
                                     <stop offset="0%" stop-color="#fff" />
@@ -161,22 +435,25 @@
                                     <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.8" />
                                 </radialGradient>
                             </defs>
-                            
+
                             <g id="starsLayer"></g>
-                            <circle cx="500" cy="500" r="480" stroke="#1e293b" stroke-width="40" fill="none" opacity="0.5" />
+                            <circle cx="500" cy="500" r="480" stroke="#1e293b" stroke-width="40" fill="none"
+                                opacity="0.5" />
                             <g id="zodiacLayer"></g>
                             <g id="gridLayer" opacity="0.2">
-                                <line x1="500" y1="0" x2="500" y2="1000" stroke="#334155" stroke-dasharray="4,4"/>
-                                <line x1="0" y1="500" x2="1000" y2="500" stroke="#334155" stroke-dasharray="4,4"/>
+                                <line x1="500" y1="0" x2="500" y2="1000" stroke="#334155" stroke-dasharray="4,4" />
+                                <line x1="0" y1="500" x2="1000" y2="500" stroke="#334155" stroke-dasharray="4,4" />
                             </g>
-                            
+
                             <g id="trailsLayer"></g>
-                            <g id="orbitsLayer"></g> <g id="aspectsLayer"></g>
+                            <g id="orbitsLayer"></g>
+                            <g id="aspectsLayer"></g>
                             <g id="planetsLayer"></g>
                         </svg>
                     </div>
-                    
-                    <div style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 8px; backdrop-filter: blur(4px); border: 1px solid #334155;">
+
+                    <div
+                        style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 8px; backdrop-filter: blur(4px); border: 1px solid #334155;">
                         <button class="btn-secondary" onclick="step(-30)">« 1M</button>
                         <button class="btn-secondary" onclick="step(-1)">‹ 1D</button>
                         <button id="playBtn" class="btn-primary" onclick="togglePlay()" style="width: 60px;">▶</button>
@@ -189,13 +466,14 @@
                     <span style="font-size: 11px; color: #94a3b8; white-space: nowrap;">Speed:</span>
                     <input type="range" min="1" max="100" value="20" oninput="speed = this.value" style="width: 100px;">
                     <span style="font-size: 11px; color: #94a3b8; margin-left: auto;">1900</span>
-                    <input type="range" id="timeline" min="-36525" max="18262" value="0" oninput="onTimelineChange(this.value)" style="flex-grow: 1;">
+                    <input type="range" id="timeline" min="-36525" max="18262" value="0"
+                        oninput="onTimelineChange(this.value)" style="flex-grow: 1;">
                     <span style="font-size: 11px; color: #94a3b8;">2050</span>
                 </div>
             </div>
 
             <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
-                
+
                 <div class="panel-section">
                     <div class="panel-title">Jump To Date</div>
                     <div style="display: flex; gap: 8px;">
@@ -221,7 +499,8 @@
                 <div style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
                     <div class="panel-title" style="display: flex; justify-content: space-between;">
                         <span>Events</span>
-                        <select id="eventFilter" onchange="renderEvents()" style="padding: 0 4px; height: 20px; font-size: 10px;">
+                        <select id="eventFilter" onchange="renderEvents()"
+                            style="padding: 0 4px; height: 20px; font-size: 10px;">
                             <option value="all">All</option>
                             <option value="sun">Sun-Saturn</option>
                             <option value="moon">Moon-Uranus</option>
@@ -232,8 +511,9 @@
 
                 <div class="panel-section" style="border: none; padding: 0;">
                     <div class="panel-title">Planetary Status</div>
-                    <div id="planetLegend" style="font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                        </div>
+                    <div id="planetLegend"
+                        style="font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -245,28 +525,28 @@
         const CENTER = SVG_SIZE / 2;
         const SCALE_FACTOR = 160; // Scale AU to pixels
         const J2000 = new Date('2000-01-01T12:00:00Z');
-        
+
         // Orbital Elements (Simplified for speed but relatively accurate)
         // Period (days), Distance (AU), Initial Longitude (deg)
         const PLANETS = {
-            Sun:     { id: 'sun',     name: 'Sun',     per: 365.256,  dist: 0,      lon: 280.46, color: '#fbbf24', radius: 24, glow: true },
-            Moon:    { id: 'moon',    name: 'Moon',    per: 27.321,   dist: 0.00257,lon: 218.31, color: '#e2e8f0', radius: 8 }, // Special handling
-            Mercury: { id: 'mercury', name: 'Mercury', per: 87.969,   dist: 0.387,  lon: 252.25, color: '#a3a3a3', radius: 6 },
-            Venus:   { id: 'venus',   name: 'Venus',   per: 224.701,  dist: 0.723,  lon: 181.97, color: '#facc15', radius: 10 },
-            Earth:   { id: 'earth',   name: 'Earth',   per: 365.256,  dist: 1.000,  lon: 100.46, color: '#3b82f6', radius: 10 },
-            Mars:    { id: 'mars',    name: 'Mars',    per: 686.980,  dist: 1.524,  lon: 355.45, color: '#ef4444', radius: 8 },
-            Jupiter: { id: 'jupiter', name: 'Jupiter', per: 4332.59,  dist: 5.203,  lon: 34.40,  color: '#f97316', radius: 18 },
-            Saturn:  { id: 'saturn',  name: 'Saturn',  per: 10759.22, dist: 9.537,  lon: 50.07,  color: '#eab308', radius: 16 },
-            Uranus:  { id: 'uranus',  name: 'Uranus',  per: 30685.4,  dist: 19.191, lon: 313.23, color: '#22d3ee', radius: 12 },
-            Neptune: { id: 'neptune', name: 'Neptune', per: 60189.0,  dist: 30.069, lon: 304.88, color: '#6366f1', radius: 12 },
-            Pluto:   { id: 'pluto',   name: 'Pluto',   per: 90560.0,  dist: 39.482, lon: 238.92, color: '#a78bfa', radius: 6 }
+            Sun: { id: 'sun', name: 'Sun', per: 365.256, dist: 0, lon: 280.46, color: '#fbbf24', radius: 24, glow: true },
+            Moon: { id: 'moon', name: 'Moon', per: 27.321, dist: 0.00257, lon: 218.31, color: '#e2e8f0', radius: 8 }, // Special handling
+            Mercury: { id: 'mercury', name: 'Mercury', per: 87.969, dist: 0.387, lon: 252.25, color: '#a3a3a3', radius: 6 },
+            Venus: { id: 'venus', name: 'Venus', per: 224.701, dist: 0.723, lon: 181.97, color: '#facc15', radius: 10 },
+            Earth: { id: 'earth', name: 'Earth', per: 365.256, dist: 1.000, lon: 100.46, color: '#3b82f6', radius: 10 },
+            Mars: { id: 'mars', name: 'Mars', per: 686.980, dist: 1.524, lon: 355.45, color: '#ef4444', radius: 8 },
+            Jupiter: { id: 'jupiter', name: 'Jupiter', per: 4332.59, dist: 5.203, lon: 34.40, color: '#f97316', radius: 18 },
+            Saturn: { id: 'saturn', name: 'Saturn', per: 10759.22, dist: 9.537, lon: 50.07, color: '#eab308', radius: 16 },
+            Uranus: { id: 'uranus', name: 'Uranus', per: 30685.4, dist: 19.191, lon: 313.23, color: '#22d3ee', radius: 12 },
+            Neptune: { id: 'neptune', name: 'Neptune', per: 60189.0, dist: 30.069, lon: 304.88, color: '#6366f1', radius: 12 },
+            Pluto: { id: 'pluto', name: 'Pluto', per: 90560.0, dist: 39.482, lon: 238.92, color: '#a78bfa', radius: 6 }
         };
 
         // View Settings
         // In Geo mode, we artificially compress outer planet distances to fit screen
         // while maintaining angular integrity for aspects.
         const GEO_SCALES = {
-            Sun: 0.6, Mercury: 0.2, Venus: 0.4, Mars: 0.8, Jupiter: 1.1, 
+            Sun: 0.6, Mercury: 0.2, Venus: 0.4, Mars: 0.8, Jupiter: 1.1,
             Saturn: 1.4, Uranus: 1.7, Neptune: 2.0, Pluto: 2.2
         };
 
@@ -288,7 +568,7 @@
             // Mean anomaly
             const M = (p.lon + (360 * (d / p.per))) % 360;
             const rad = M * Math.PI / 180;
-            
+
             // Simple circular orbit (x, y)
             // Note: For full accuracy we'd add eccentricity, but this is sufficient for retrogrades
             return {
@@ -301,13 +581,13 @@
         function getGeoPos(planetName, d) {
             // 1. Get Earth Heliocentric
             const earth = getHelioPos('Earth', d);
-            
+
             // 2. Get Object Heliocentric
             if (planetName === 'Sun') {
                 // Sun from Earth is inverse of Earth from Sun
                 return { x: -earth.x, y: -earth.y, dist: 1 };
             }
-            
+
             if (planetName === 'Moon') {
                 // Moon is special: It orbits Earth, carried by Earth
                 // Geo position is just its simple geocentric orbit (approx)
@@ -315,7 +595,7 @@
                 const M = (m.lon + (360 * (d / m.per))) % 360;
                 const rad = M * Math.PI / 180;
                 // Scale moon distance up for visibility in the UI (it's too close otherwise)
-                const visDist = 0.15; 
+                const visDist = 0.15;
                 return { x: Math.cos(rad) * visDist, y: Math.sin(rad) * visDist, dist: visDist };
             }
 
@@ -324,8 +604,8 @@
             // 3. Vector Subtraction (Planet - Earth)
             const dx = p.x - earth.x;
             const dy = p.y - earth.y;
-            
-            return { x: dx, y: dy, dist: Math.sqrt(dx*dx + dy*dy) };
+
+            return { x: dx, y: dy, dist: Math.sqrt(dx * dx + dy * dy) };
         }
 
         function calculateScreenCoords(planetName, d) {
@@ -346,12 +626,12 @@
                 if (planetName === 'Earth') return { x: 0, y: 0, angle: 0 };
                 const pos = getGeoPos(planetName, d);
                 const angle = Math.atan2(pos.y, pos.x);
-                
+
                 // Use fixed scales for visual clarity in Geocentric mode
                 // so planets don't overlap or fly off screen
                 let r = GEO_SCALES[planetName] * 180;
                 if (planetName === 'Moon') r = 60; // Fixed orbit for UI
-                
+
                 x = Math.cos(angle) * r;
                 y = Math.sin(angle) * r;
                 angleDeg = (angle * 180 / Math.PI + 360) % 360;
@@ -366,20 +646,23 @@
         function init() {
             createStars();
             createZodiac();
-            
+
             // Initialize history arrays
             Object.keys(PLANETS).forEach(k => state.history[k] = []);
-            
+
             // Calculate events cache (Sun-Saturn & Moon-Uranus)
             precalcEvents();
-            
+
+            // Init Date Picker
+            document.getElementById('datePicker').value = J2000.toISOString().split('T')[0];
+
             update(0); // Start at J2000
         }
 
         function createStars() {
             const g = document.getElementById('starsLayer');
             let html = '';
-            for(let i=0; i<300; i++) {
+            for (let i = 0; i < 300; i++) {
                 const x = Math.random() * SVG_SIZE;
                 const y = Math.random() * SVG_SIZE;
                 const r = Math.random() * 1.5;
@@ -391,7 +674,7 @@
 
         function createZodiac() {
             const g = document.getElementById('zodiacLayer');
-            const signs = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+            const signs = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
             let html = '';
             signs.forEach((s, i) => {
                 const deg = i * 30;
@@ -399,14 +682,14 @@
                 // Flip Y for SVG
                 const x = CENTER + Math.cos(rad) * 460;
                 const y = CENTER - Math.sin(rad) * 460;
-                
+
                 // Line dividers
                 const lineRad = deg * Math.PI / 180;
                 const x1 = CENTER + Math.cos(lineRad) * 440;
                 const y1 = CENTER - Math.sin(lineRad) * 440;
                 const x2 = CENTER + Math.cos(lineRad) * 480;
                 const y2 = CENTER - Math.sin(lineRad) * 480;
-                
+
                 html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" />`;
                 html += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="#64748b" font-size="20">${s}</text>`;
             });
@@ -429,11 +712,11 @@
         function render() {
             const d = state.days;
             const date = new Date(J2000.getTime() + d * 86400000);
-            
+
             // 1. Update UI Text
             document.getElementById('dateDisplay').textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
             document.getElementById('timeline').value = d;
-            
+
             // Era Badge
             const y = date.getFullYear();
             const badge = document.getElementById('eraBadge');
@@ -452,7 +735,7 @@
             // Center Object (Earth or Sun)
             if (state.view === 'geo') {
                 planetsHtml += `<circle cx="${CENTER}" cy="${CENTER}" r="8" fill="#3b82f6" filter="url(#glow)" />`;
-                planetsHtml += `<text x="${CENTER}" y="${CENTER+20}" fill="#3b82f6" font-size="10" text-anchor="middle">Earth</text>`;
+                planetsHtml += `<text x="${CENTER}" y="${CENTER + 20}" fill="#3b82f6" font-size="10" text-anchor="middle">Earth</text>`;
             } else {
                 planetsHtml += `<circle cx="${CENTER}" cy="${CENTER}" r="14" fill="url(#sunGradient)" filter="url(#glow)" />`;
             }
@@ -466,9 +749,9 @@
 
                 // Update History for Trails
                 if (state.trailLength > 0) {
-                    state.history[key].push({x: pos.x, y: pos.y});
+                    state.history[key].push({ x: pos.x, y: pos.y });
                     if (state.history[key].length > state.trailLength) state.history[key].shift();
-                    
+
                     if (state.history[key].length > 1) {
                         const points = state.history[key].map(pt => `${pt.x},${pt.y}`).join(' ');
                         trailsHtml += `<polyline points="${points}" class="trail" stroke="${p.color}" stroke-opacity="0.4" stroke-width="1" />`;
@@ -479,8 +762,8 @@
                 let isRetro = false;
                 if (state.history[key].length > 2) {
                     const h = state.history[key];
-                    const prev = h[h.length-2];
-                    const curr = h[h.length-1];
+                    const prev = h[h.length - 2];
+                    const curr = h[h.length - 1];
                     // Very rough visual check relative to center in 2D plane logic
                     // Real check is dLon/dt < 0
                     // We'll rely on the visual loop for now, but update Legend
@@ -489,8 +772,8 @@
                 // Draw Planet
                 planetsHtml += `
                     <g class="planet-grp" onmouseenter="showTooltip('${key}', ${pos.angle.toFixed(1)})" onmouseleave="hideTooltip()">
-                        <circle cx="${pos.x}" cy="${pos.y}" r="${p.radius/2}" fill="${p.color}" class="planet-circle" ${p.glow ? 'filter="url(#glow)"' : ''} />
-                        <text x="${pos.x}" y="${pos.y+12}" fill="${p.color}" font-size="9" text-anchor="middle">${p.name}</text>
+                        <circle cx="${pos.x}" cy="${pos.y}" r="${p.radius / 2}" fill="${p.color}" class="planet-circle" ${p.glow ? 'filter="url(#glow)"' : ''} />
+                        <text x="${pos.x}" y="${pos.y + 12}" fill="${p.color}" font-size="9" text-anchor="middle">${p.name}</text>
                     </g>
                 `;
 
@@ -518,24 +801,24 @@
             // Calc separation
             let sep = Math.abs(p1.angle - p2.angle);
             if (sep > 180) sep = 360 - sep;
-            
+
             const lineId = `${n1}-${n2}`;
             let line = document.getElementById(lineId);
-            
+
             // Draw Opposition Line
             const g = document.getElementById('aspectsLayer');
             // Rebuild aspects layer every frame is okay for this count
             // Actually let's just inject line if huge aspect
-            
+
             const isOpp = sep > 175;
             const elVal = document.getElementById(valId);
             const elBox = document.getElementById(boxId);
-            
+
             elVal.innerText = sep.toFixed(1) + '°';
-            
+
             if (isOpp) {
                 elBox.classList.add('active');
-                if (!document.getElementById('line-'+lineId)) {
+                if (!document.getElementById('line-' + lineId)) {
                     // This is inefficient in render loop, ideally use existing DOM
                     g.innerHTML += `<line id="line-${lineId}" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="white" stroke-dasharray="4" opacity="0.5" />`;
                 }
@@ -563,7 +846,7 @@
             state.view = mode;
             // Clear history so trails don't look crazy during switch
             Object.keys(PLANETS).forEach(k => state.history[k] = []);
-            
+
             document.getElementById('viewGeo').className = mode === 'geo' ? 'btn-outline active' : 'btn-outline';
             document.getElementById('viewHelio').className = mode === 'helio' ? 'btn-outline active' : 'btn-outline';
             render();
@@ -573,7 +856,7 @@
             state.trailLength = parseInt(val);
             Object.keys(PLANETS).forEach(k => state.history[k] = []);
         }
-        
+
         function onTimelineChange(val) {
             state.days = parseInt(val);
             state.playing = false;
@@ -583,12 +866,15 @@
         }
 
         function goToDate(val) {
+            if (!val) return;
             if (val === 'today') {
                 const now = new Date();
                 const diff = (now - J2000) / 86400000;
                 state.days = diff;
+                document.getElementById('datePicker').value = now.toISOString().split('T')[0];
             } else {
                 const d = new Date(val);
+                if (isNaN(d.getTime())) return;
                 const diff = (d - J2000) / 86400000;
                 state.days = diff;
             }
@@ -599,13 +885,13 @@
 
         // --- TOOLTIP ---
         function showTooltip(name, angle) {
-            if(state.playing) togglePlay(); // Pause on hover
+            if (state.playing) togglePlay(); // Pause on hover
             const t = document.getElementById('tooltip');
             t.style.opacity = 1;
             t.innerHTML = `<strong>${name}</strong><br>Lon: ${angle}°`;
-            
+
             // Move tooltip to mouse (requires mouse event, simple hack here:)
-            document.onmousemove = function(e) {
+            document.onmousemove = function (e) {
                 // Get container rect
                 const rect = document.querySelector('.sim-container').getBoundingClientRect();
                 t.style.left = (e.clientX - rect.left + 15) + 'px';
@@ -626,10 +912,10 @@
             // Optimization: Just scan 2020-2030 for demo, or based on range
             const start = -2000; // ~1995
             const end = 12000;   // ~2033
-            
+
             let wasSunOpp = false;
             let wasMoonOpp = false;
-            
+
             for (let d = start; d < end; d += 1) {
                 // Sun Sat
                 const pSun = calculateScreenCoords('Sun', d);
@@ -638,20 +924,20 @@
                 // Re-using internal logic for speed:
                 const s1 = (getGeoPos('Sun', d).x); // Simplified check not implemented for speed
                 // Let's rely on simple angular math:
-                const sunA = (PLANETS.Sun.lon + 0.9856 * d) % 360; 
+                const sunA = (PLANETS.Sun.lon + 0.9856 * d) % 360;
                 const satA = (PLANETS.Saturn.lon + 0.033 * d) % 360;
                 const diffS = Math.abs(sunA - satA) % 180; // Rough helio conj/opp
-                
+
                 // Real Oppositions require Geo coords. 
                 // Let's just generate some "Mock" Perfect data for the UI based on sine waves for performance in this single file
                 // A real app would use a heavy ephemeris library
-                
+
                 // Mocking accurate dates for demo purposes:
                 // Sun-Saturn opp happens every ~378 days
-                if ((d - 100) % 378 < 1.5) { 
+                if ((d - 100) % 378 < 1.5) {
                     state.events.push({ d: d, type: 'sun', label: 'Sun-Saturn Opposition', color: 'sun' });
                 }
-                
+
                 // Moon-Uranus every ~27 days
                 if ((d) % 27.3 < 1) {
                     state.events.push({ d: d, type: 'moon', label: 'Moon-Uranus Conj/Opp', color: 'moon' });
@@ -663,12 +949,12 @@
         function renderEvents() {
             const filter = document.getElementById('eventFilter').value;
             const list = document.getElementById('eventList');
-            
+
             const filtered = state.events.filter(e => filter === 'all' || e.type === filter);
-            
+
             // Sort by proximity to current date? Or just Chronological?
             // Let's show chronological
-            
+
             let html = '';
             filtered.forEach(e => {
                 const date = new Date(J2000.getTime() + e.d * 86400000);
@@ -685,8 +971,8 @@
             // Find closest event
             // Remove old active
             const old = document.querySelector('.event-item.active');
-            if(old) old.classList.remove('active');
-            
+            if (old) old.classList.remove('active');
+
             // Find one within 10 days
             const match = state.events.find(e => Math.abs(e.d - currentDay) < 5);
             if (match) {
@@ -698,7 +984,7 @@
             }
         }
 
-        window.goToEvent = function(d) {
+        window.goToEvent = function (d) {
             state.days = d;
             state.playing = false;
             Object.keys(PLANETS).forEach(k => state.history[k] = []);
@@ -710,4 +996,5 @@
 
     </script>
 </body>
+
 </html>
