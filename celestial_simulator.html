@@ -475,10 +475,28 @@
             <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
 
                 <div class="panel-section">
-                    <div class="panel-title">Jump To Date</div>
-                    <div style="display: flex; gap: 8px;">
+                    <div class="panel-title">Significant Alignments</div>
+                    <select id="presetSelect" onchange="loadPreset(this.value)"
+                        style="width: 100%; margin-bottom: 8px;">
+                        <option value="">-- Select an Event --</option>
+                        <option value="1962-02-05">1962: The Great Stellium (7 Bodies)</option>
+                        <option value="1982-03-10">1982: The Jupiter Effect (95° Spread)</option>
+                        <option value="2000-05-05">2000: The 5/5 Alignment</option>
+                        <option value="2020-01-12">2020: Saturn-Pluto Conj (COVID)</option>
+                        <option value="2040-09-08">2040: The Golden Conjunction</option>
+                        <option value="2854-06-15">2854: The Ultimate Lineup</option>
+                    </select>
+
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                         <input type="date" id="datePicker" style="width: 100%;" onchange="goToDate(this.value)">
                         <button class="btn-secondary" onclick="goToDate('today')">Today</button>
+                    </div>
+
+                    <div id="alignmentScore"
+                        style="background: #312e81; padding: 8px; border-radius: 4px; font-size: 11px; display: none;">
+                        <strong>Alignment Score:</strong> <span id="scoreVal"
+                            style="color: #fbbf24; font-weight: bold;">0%</span>
+                        <div style="color: #94a3b8; margin-top: 2px;">Max Spread: <span id="spreadVal">0</span>°</div>
                     </div>
                 </div>
 
@@ -989,6 +1007,91 @@
             state.playing = false;
             Object.keys(PLANETS).forEach(k => state.history[k] = []);
             render();
+        }
+
+        // --- NEW ALIGNMENT LOGIC ---
+
+        function loadPreset(dateStr) {
+            if (!dateStr) return;
+            goToDate(dateStr);
+
+            // Auto-switch view for best effect
+            // 1962 looks best in Geo, 1982 looks best in Helio
+            if (dateStr.includes('1982') || dateStr.includes('2040')) {
+                setViewMode('helio');
+            } else {
+                setViewMode('geo');
+            }
+
+            setTimeout(analyzeAlignment, 100); // Wait for render
+        }
+
+        // Calculate how "bunched up" the planets are
+        function analyzeAlignment() {
+            const bodies = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+            const angles = [];
+
+            // 1. Collect angles based on current view
+            if (state.view === 'geo') {
+                bodies.forEach(b => {
+                    const pos = calculateScreenCoords(b, state.days);
+                    if (pos) angles.push(pos.angle);
+                });
+            } else {
+                // In helio, we exclude Sun/Moon, include Earth
+                ['Earth', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus'].forEach(b => {
+                    const pos = calculateScreenCoords(b, state.days);
+                    if (pos) angles.push(pos.angle);
+                });
+            }
+
+            // 2. Sort angles
+            angles.sort((a, b) => a - b);
+
+            // 3. Find the smallest arc containing all planets
+            // We must check every gap between planets to handle the 360/0 crossover
+            let maxGap = 0;
+            for (let i = 0; i < angles.length; i++) {
+                const current = angles[i];
+                const next = angles[(i + 1) % angles.length];
+                let gap = next - current;
+                if (gap < 0) gap += 360; // Handle circle wrap
+                if (gap > maxGap) maxGap = gap;
+            }
+
+            // The spread is the circle minus the largest gap
+            const spread = 360 - maxGap;
+
+            // 4. Update UI
+            const ui = document.getElementById('alignmentScore');
+            const scoreVal = document.getElementById('scoreVal');
+            const spreadVal = document.getElementById('spreadVal');
+
+            ui.style.display = 'block';
+            spreadVal.textContent = spread.toFixed(1);
+
+            // "Score" is arbitrary: 0 spread = 100%, 180 spread = 0%
+            let score = Math.max(0, 100 - (spread / 1.8));
+            scoreVal.textContent = score.toFixed(0) + '%';
+
+            if (spread < 20) {
+                ui.style.background = '#4c1d95'; // Deep purple for super rare
+                scoreVal.innerHTML += " (LEGENDARY)";
+            } else if (spread < 90) {
+                ui.style.background = '#3730a3';
+            } else {
+                ui.style.background = '#1e1b4b';
+            }
+        }
+
+        // Hook analysis into the render loop so it updates as you play
+        const originalRender = render;
+        render = function () {
+            originalRender();
+            // Only analyze every 5 frames to save CPU
+            if (Math.floor(state.days) % 5 === 0 || !state.playing) {
+                analyzeAlignment();
+            }
         }
 
         // Start
