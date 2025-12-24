@@ -339,21 +339,26 @@ class SharktoothDetector:
         X = features.loc[valid_idx]
         y = labels.loc[valid_idx]
         
-        self.feature_names = list(X.columns)
         return X, y
     
-    def train(self, df: pd.DataFrame, verbose: bool = True) -> 'SharktoothDetector':
+    def train(self, df: pd.DataFrame, extra_features: pd.DataFrame = None, verbose: bool = True) -> 'SharktoothDetector':
         if verbose:
-            print(f"Training {self.mode.upper()} Detector (v7.2 - ML Integrated)...")
+            print(f"Training {self.mode.upper()} Detector (v7.3 - Astro-ML Integrated)...")
         
         X, y = self.prepare_data(df)
         
+        if extra_features is not None:
+             X = pd.concat([X, extra_features], axis=1)
+             # Align indices
+             X = X.loc[y.index]
+        
         if verbose:
-            print(f"  Features: {len(self.feature_names)} (includes Pine Script crossover)")
+            print(f"  Features: {len(X.columns)} (Technical + Celestial)")
             # Show new features
-            pine_features = [f for f in self.feature_names if 'crossunder' in f.lower() or 
-                           'PINE' in f or 'PANIC' in f or 'CRASH' in f]
-            print(f"  New Pine features: {pine_features}")
+            new_feats = [f for f in X.columns if 'norm' in f or 'PINE' in f]
+            print(f"  New/Celestial features: {new_feats}")
+        
+        self.feature_names = list(X.columns)
         
         X_scaled = pd.DataFrame(
             self.scaler.fit_transform(X),
@@ -404,17 +409,24 @@ class SharktoothDetector:
         
         return self
     
-    def predict(self, df: pd.DataFrame) -> pd.Series:
+    def predict(self, df: pd.DataFrame, extra_features: pd.DataFrame = None) -> pd.Series:
         if self.model is None:
             raise ValueError("Model not trained!")
         
         features = TechnicalEngine.calculate(df)
+        if extra_features is not None:
+             features = pd.concat([features, extra_features], axis=1)
+             features = features.loc[df.index]
+             
+        # Refresh feature names from model in case we loaded old model or trained new one
+        model_feats = self.feature_names
         
-        for feat in self.feature_names:
+        # Verify alignment
+        for feat in model_feats:
             if feat not in features.columns:
-                features[feat] = 0
+                 features[feat] = 0
         
-        X = features[self.feature_names].fillna(0)
+        X = features[model_feats].fillna(0)
         X_scaled = self.scaler.transform(X)
         
         probs = self.model.predict_proba(X_scaled)[:, 1]
@@ -605,12 +617,40 @@ class BulletproofStrategyV72:
                 'profit_take_bear_min': 0.30,
             }
         
+        # ----------------------------------------------------------------------
+        # ASTRO-ML INTEGRATION: Pre-calculate Continuous Features
+        # ----------------------------------------------------------------------
+        print("Calculating historical celestial features for ML training...")
+        astro_features = []
+        for d in self.signal_data.index:
+            date_str = d.strftime('%Y/%m/%d')
+            # Bypass cache for bulk calculation if needed, or rely on internal cache
+            # The get_features method is fast enough with cache
+            feat = self.celestial.get_features(date_str)
+            astro_features.append({
+                'sun_saturn_sep_norm': feat['sun_saturn_sep'] / 180.0,
+                'moon_uranus_sep_norm': feat['moon_uranus_sep'] / 180.0
+            })
+        
+        astro_df = pd.DataFrame(astro_features, index=self.signal_data.index)
+        # Append to signal_data SOLELY so TechnicalEngine or the Model sees them?
+        # Actually, TechnicalEngine calculates Technicals. 
+        # We need to append these AFTER TechnicalEngine or MERGE them.
+        
+        # Let's verify where features are generated.
+        # features = TechnicalEngine.calculate(self.signal_data)
+        # We should append astro features to 'features' dataframe before prediction/training.
+        
+        self.astro_df = astro_df # Store for use in training/prediction
+        
         if self.bull_detector is None:
             self.train_models(verbose=verbose)
         
-        bull_probs = self.bull_detector.predict(self.signal_data)
-        bear_probs = self.bear_detector.predict(self.signal_data)
+        bull_probs = self.bull_detector.predict(self.signal_data, extra_features=self.astro_df)
+        bear_probs = self.bear_detector.predict(self.signal_data, extra_features=self.astro_df)
         features = TechnicalEngine.calculate(self.signal_data)
+        # Merge astro features for reference if needed, but prediction used them above
+        features = pd.concat([features, self.astro_df], axis=1)
         close = safe_series(self.trade_data['Close'])
         
         # Pre-calculate MA50 for override logic
@@ -691,18 +731,10 @@ class BulletproofStrategyV72:
                     signal_conviction = "MEDIUM"
                 
                 if signal_size > 0:
-                    # Moon-Uranus (Aggressive)
-                    if cel['moon_opp_uranus'] and 18 < vix < 28:
-                        signal_size = min(signal_size * 1.25, 1.0)
+                    # v7.3 UPGRADE: Manual Celestial Overlays REMOVED
+                    # The ML model now includes 'sun_saturn_sep_norm' and 'moon_uranus_sep_norm'
+                    # directly in the training features.
                     
-                    # Validated Lunar Overlay (Option A - Risk Modulation)
-                    # Validated for SPY, IWM. NOT valid for QQQ.
-                    if cel.get('is_lunar_window', False) and \
-                       self.symbol in ['SPY', 'IWM', 'UPRO', 'TNA']:
-                         signal_size = min(signal_size * 1.20, 1.0)
-                         if verbose and date.year >= 2020:
-                             signal_conviction += " + MOON"
-                             
                     # LOG VALID SIGNAL
                     self.all_signals.append({
                         'Date': date,
