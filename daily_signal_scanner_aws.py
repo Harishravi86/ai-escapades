@@ -429,11 +429,12 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
     <html>
     <head>
         <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }}
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
             .container {{ max-width: 600px; margin: 0 auto; }}
-            .header {{ text-align: center; padding: 20px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; }}
-            .signal-box {{ text-align: center; padding: 30px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid {{signal_color}}; }}
-            .signal {{ font-size: 48px; font-weight: bold; color: {{signal_color}}; }}
+            .header { text-align: center; padding: 20px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; }
+            .signal-box { text-align: center; padding: 30px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid {signal_color}; }
+            .signal { font-size: 48px; font-weight: bold; color: {signal_color}; }
             .section {{ background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 15px; }}
             .section-title {{ font-size: 14px; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; }}
             .row {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; }}
@@ -451,16 +452,16 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
         <div class="container">
             <div class="header">
                 <h1 style="margin: 0; font-size: 24px;">🎯 Bulletproof v7.3</h1>
-                <p style="margin: 5px 0 0 0; color: #94a3b8;">{{date.strftime('%A, %B %d, %Y')}} • 3:00 PM CST</p>
+                <p style="margin: 5px 0 0 0; color: #94a3b8;">{date.strftime('%A, %B %d, %Y')} • 3:00 PM CST</p>
             </div>
             
             <div class="signal-box">
-                <div style="font-size: 24px; margin-bottom: 10px;">{{signal_emoji}}</div>
-                <div class="signal">{{signal['signal']}}</div>
+                <div style="font-size: 24px; margin-bottom: 10px;">{signal_emoji}</div>
+                <div class="signal">{signal['signal']}</div>
                 <div style="color: #94a3b8; margin-top: 10px;">
-                    Conviction: <strong>{{signal['conviction']}}</strong> • 
-                    Size: <strong>{{signal['size']*100:.0f}}%</strong> •
-                    Probability: <strong>{{signal['bull_prob']*100:.0f}}%</strong>
+                    Conviction: <strong>{signal['conviction']}</strong> • 
+                    Size: <strong>{signal['size']*100:.0f}%</strong> •
+                    Probability: <strong>{signal['bull_prob']*100:.0f}%</strong>
                 </div>
             </div>
             
@@ -468,15 +469,15 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
                 <div class="section-title">📊 Market Status</div>
                 <div class="row">
                     <span class="label">SPY Price</span>
-                    <span class="value">${{technicals['price']:.2f}}</span>
+                    <span class="value">${technicals['price']:.2f}</span>
                 </div>
                 <div class="row">
                     <span class="label">Daily Change</span>
-                    <span class="value" style="color: {{change_color}}">{{daily_change:+.2f}}%</span>
+                    <span class="value" style="color: {change_color}">{daily_change:+.2f}%</span>
                 </div>
                 <div class="row">
                     <span class="label">VIX</span>
-                    <span class="value">{{vix:.2f}}</span>
+                    <span class="value">{vix:.2f}</span>
                 </div>
             </div>
             
@@ -484,27 +485,27 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
                 <div class="section-title">📈 Technical Indicators</div>
                 <div class="row">
                     <span class="label">RSI(2)</span>
-                    <span class="value">{{technicals.get('RSI_2', 0):.1f}} {{'⚠️' if technicals.get('RSI_2_oversold') else ''}}</span>
+                    <span class="value">{technicals.get('RSI_2', 0):.1f} {'⚠️' if technicals.get('RSI_2_oversold') else ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">RSI(14)</span>
-                    <span class="value">{{technicals.get('RSI_14', 0):.1f}} {{'⚠️' if technicals.get('RSI_14_oversold') else ''}}</span>
+                    <span class="value">{technicals.get('RSI_14', 0):.1f} {'⚠️' if technicals.get('RSI_14_oversold') else ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">BB(20) %B</span>
-                    <span class="value">{{technicals.get('BB_20_pctb', 0):.2f}} {{'🦈' if technicals.get('BB_20_sharktooth') else ''}}</span>
+                    <span class="value">{technicals.get('BB_20_pctb', 0):.2f} {'🦈' if technicals.get('BB_20_sharktooth') else ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">Stochastic K</span>
-                    <span class="value">{{technicals.get('STOCH_k', 0):.1f}} {{'⚠️' if technicals.get('STOCH_oversold') else ''}}</span>
+                    <span class="value">{technicals.get('STOCH_k', 0):.1f} {'⚠️' if technicals.get('STOCH_oversold') else ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">Oversold Count</span>
-                    <span class="value">{{technicals['oversold_count']}}/7</span>
+                    <span class="value">{technicals['oversold_count']}/7</span>
                 </div>
                 <div class="row">
                     <span class="label">Sharktooth Count</span>
-                    <span class="value">{{technicals['sharktooth_count']}}</span>
+                    <span class="value">{technicals['sharktooth_count']}</span>
                 </div>
             </div>
             
@@ -512,27 +513,27 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
                 <div class="section-title">🌙 Celestial Conditions</div>
                 <div class="row">
                     <span class="label">Sun-Saturn Sep</span>
-                    <span class="value">{{celestial['sun_saturn_sep']:.1f}}° {{'☍ OPP' if celestial['sun_opp_saturn'] else ''}}</span>
+                    <span class="value">{celestial['sun_saturn_sep']:.1f}° {'☍ OPP' if celestial['sun_opp_saturn'] else ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">Moon-Uranus Sep</span>
-                    <span class="value">{{celestial['moon_uranus_sep']:.1f}}° {{'☍ OPP' if celestial['moon_opp_uranus'] else ''}}</span>
+                    <span class="value">{celestial['moon_uranus_sep']:.1f}° {'☍ OPP' if celestial['moon_opp_uranus'] else ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">Moon Phase</span>
-                    <span class="value">{{celestial['moon_phase']:.0f}}%</span>
+                    <span class="value">{celestial['moon_phase']:.0f}%</span>
                 </div>
                 <div class="row">
                     <span class="label">Planetary Spread</span>
-                    <span class="value">{{celestial['spread']:.1f}}°</span>
+                    <span class="value">{celestial['spread']:.1f}°</span>
                 </div>
                 <div class="row">
                     <span class="label">Spread Regime</span>
-                    <span class="value">{{celestial['spread_regime']}}</span>
+                    <span class="value">{celestial['spread_regime']}</span>
                 </div>
                 <div class="row">
                     <span class="label">Next Moon-Uranus Opp</span>
-                    <span class="value">{{celestial['next_moon_uranus_opp']}}</span>
+                    <span class="value">{celestial['next_moon_uranus_opp']}</span>
                 </div>
             </div>
     """
@@ -561,13 +562,13 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
     if alerts:
         html += '<div class="section"><div class="section-title">🚨 Alerts</div>'
         for alert_type, alert_text in alerts:
-            html += f'<div class="alert alert-{{alert_type}}">{{alert_text}}</div>'
+            html += f'<div class="alert alert-{alert_type}">{alert_text}</div>'
         html += '</div>'
     
     html += f"""
             <div class="footer">
                 <p>Bulletproof Strategy v7.3 • Astro-ML Engine</p>
-                <p>Generated at {{datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}}</p>
+                <p>Generated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
             </div>
         </div>
     </body>
@@ -584,40 +585,40 @@ def format_email_text(date: datetime, technicals: dict, celestial: dict,
     text = f"""
 ================================================================================
 BULLETPROOF v7.3 - DAILY SIGNAL
-{{date.strftime('%A, %B %d, %Y')}} • 3:00 PM CST
+{date.strftime('%A, %B %d, %Y')} • 3:00 PM CST
 ================================================================================
 
-SIGNAL: {{signal['signal']}}
-Conviction: {{signal['conviction']}}
-Position Size: {{signal['size']*100:.0f}}%
-Bull Probability: {{signal['bull_prob']*100:.0f}}%
+SIGNAL: {signal['signal']}
+Conviction: {signal['conviction']}
+Position Size: {signal['size']*100:.0f}%
+Bull Probability: {signal['bull_prob']*100:.0f}%
 
 --------------------------------------------------------------------------------
 MARKET STATUS
 --------------------------------------------------------------------------------
-SPY Price: ${{technicals['price']:.2f}}
-Daily Change: {{technicals['daily_return']*100:+.2f}}%
-VIX: {{vix:.2f}}
+SPY Price: ${technicals['price']:.2f}
+Daily Change: {technicals['daily_return']*100:+.2f}%
+VIX: {vix:.2f}
 
 --------------------------------------------------------------------------------
 TECHNICAL INDICATORS
 --------------------------------------------------------------------------------
-RSI(2): {{technicals.get('RSI_2', 0):.1f}} {{'OVERSOLD' if technicals.get('RSI_2_oversold') else ''}}
-RSI(14): {{technicals.get('RSI_14', 0):.1f}} {{'OVERSOLD' if technicals.get('RSI_14_oversold') else ''}}
-BB(20) %B: {{technicals.get('BB_20_pctb', 0):.2f}} {{'SHARKTOOTH' if technicals.get('BB_20_sharktooth') else ''}}
-Stochastic K: {{technicals.get('STOCH_k', 0):.1f}} {{'OVERSOLD' if technicals.get('STOCH_oversold') else ''}}
-Oversold Count: {{technicals['oversold_count']}}/7
-Sharktooth Count: {{technicals['sharktooth_count']}}
+RSI(2): {technicals.get('RSI_2', 0):.1f} {'OVERSOLD' if technicals.get('RSI_2_oversold') else ''}
+RSI(14): {technicals.get('RSI_14', 0):.1f} {'OVERSOLD' if technicals.get('RSI_14_oversold') else ''}
+BB(20) %B: {technicals.get('BB_20_pctb', 0):.2f} {'SHARKTOOTH' if technicals.get('BB_20_sharktooth') else ''}
+Stochastic K: {technicals.get('STOCH_k', 0):.1f} {'OVERSOLD' if technicals.get('STOCH_oversold') else ''}
+Oversold Count: {technicals['oversold_count']}/7
+Sharktooth Count: {technicals['sharktooth_count']}
 
 --------------------------------------------------------------------------------
 CELESTIAL CONDITIONS
 --------------------------------------------------------------------------------
-Sun-Saturn Sep: {{celestial['sun_saturn_sep']:.1f}}° {{'OPPOSITION' if celestial['sun_opp_saturn'] else ''}}
-Moon-Uranus Sep: {{celestial['moon_uranus_sep']:.1f}}° {{'OPPOSITION' if celestial['moon_opp_uranus'] else ''}}
-Moon Phase: {{celestial['moon_phase']:.0f}}%
-Planetary Spread: {{celestial['spread']:.1f}}°
-Spread Regime: {{celestial['spread_regime']}}
-Next Moon-Uranus Opp: {{celestial['next_moon_uranus_opp']}}
+Sun-Saturn Sep: {celestial['sun_saturn_sep']:.1f}° {'OPPOSITION' if celestial['sun_opp_saturn'] else ''}
+Moon-Uranus Sep: {celestial['moon_uranus_sep']:.1f}° {'OPPOSITION' if celestial['moon_opp_uranus'] else ''}
+Moon Phase: {celestial['moon_phase']:.0f}%
+Planetary Spread: {celestial['spread']:.1f}°
+Spread Regime: {celestial['spread_regime']}
+Next Moon-Uranus Opp: {celestial['next_moon_uranus_opp']}
 
 --------------------------------------------------------------------------------
 ALERTS
@@ -635,7 +636,7 @@ ALERTS
     
     text += f"""
 ================================================================================
-Generated: {{datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}}
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
 ================================================================================
 """
     
@@ -668,11 +669,12 @@ def send_email(subject: str, html_body: str, text_body: str) -> bool:
             server.login(CONFIG['smtp_username'], CONFIG['smtp_password'])
             server.sendmail(CONFIG['email_from'], CONFIG['email_to'], msg.as_string())
         
-        print(f"Email sent successfully to {{CONFIG['email_to']}}")
+        
+        print(f"Email sent successfully to {CONFIG['email_to']}")
         return True
         
     except Exception as e:
-        print(f"Failed to send email: {{e}}")
+        print(f"Failed to send email: {e}")
         traceback.print_exc()
         return False
 
