@@ -429,12 +429,11 @@ def format_email_html(date: datetime, technicals: dict, celestial: dict,
     <html>
     <head>
         <style>
-        <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }}
             .container {{ max-width: 600px; margin: 0 auto; }}
-            .header { text-align: center; padding: 20px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; }
-            .signal-box { text-align: center; padding: 30px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid {signal_color}; }
-            .signal { font-size: 48px; font-weight: bold; color: {signal_color}; }
+            .header {{ text-align: center; padding: 20px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; }}
+            .signal-box {{ text-align: center; padding: 30px; background: #1e293b; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid {signal_color}; }}
+            .signal {{ font-size: 48px; font-weight: bold; color: {signal_color}; }}
             .section {{ background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 15px; }}
             .section-title {{ font-size: 14px; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; }}
             .row {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; }}
