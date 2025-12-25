@@ -5,26 +5,22 @@
 pip install yfinance pandas pandas_ta ephem xgboost joblib
 ```
 
-## 2. Configure Email (edit the script)
-Open `daily_signal_scanner_aws.py` and scroll to the `CONFIG` section:
-```python
-CONFIG = {
-    # AWS SES settings
-    'smtp_server': 'email-smtp.us-east-1.amazonaws.com',
-    'smtp_port': 587,
-    'smtp_username': 'YOUR_SES_SMTP_USERNAME',
-    'smtp_password': 'YOUR_SES_SMTP_PASSWORD',
-    'email_from': 'bulletproof@yourdomain.com',
-    'email_to': ['your-email@gmail.com'],
-    ...
-}
-```
+## 2. Configure Email
+### Option A: Gmail (Recommended/Easiest)
+1.  Go to your Google Account > Security.
+2.  Enable **2-Step Verification** if not already on.
+3.  Go to **App passwords** (search for it in the top bar).
+4.  Create a new app password:
+    *   **App**: "Mail"
+    *   **Device**: "Other (AWS Scanner)"
+5.  Copy the 16-character code (e.g., `xxxx xxxx xxxx xxxx`).
+6.  Edit `daily_signal_scanner_aws.py` and paste it into the `CONFIG` section.
 
-Or use environment variables:
-```bash
-export SMTP_USERNAME='your_ses_username'
-export SMTP_PASSWORD='your_ses_password'
-```
+### Option B: AWS SES (Production)
+If using AWS Simple Email Service:
+1.  Verify your sender email and domain in the SES Console.
+2.  Create SMTP credentials in IAM.
+3.  Use the `email-smtp` server settings in the script.
 
 ## 3. Setup Cron (3 PM CST = 21:00 UTC)
 Open crontab:

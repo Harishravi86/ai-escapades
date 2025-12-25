@@ -61,13 +61,28 @@ except ImportError:
 # =============================================================================
 
 CONFIG = {
-    # Email Settings (Use AWS SES or Gmail App Password)
-    'smtp_server': 'email-smtp.us-east-1.amazonaws.com',  # AWS SES
+    # ------------------------------------------------------------------
+    # OPTION 1: GMAIL (Easier)
+    # 1. Go to https://myaccount.google.com/apppasswords
+    # 2. Create new app password named "AWS Scanner"
+    # 3. Use that 16-character code below
+    # ------------------------------------------------------------------
+    'smtp_server': 'smtp.gmail.com',
     'smtp_port': 587,
-    'smtp_username': os.environ.get('SMTP_USERNAME', 'YOUR_SES_USERNAME'),
-    'smtp_password': os.environ.get('SMTP_PASSWORD', 'YOUR_SES_PASSWORD'),
+    'smtp_username': 'your-email@gmail.com',
+    'smtp_password': 'xxxx xxxx xxxx xxxx',  # App Password (not login password)
+    
+    # ------------------------------------------------------------------
+    # OPTION 2: AWS SES (Production)
+    # 'smtp_server': 'email-smtp.us-east-1.amazonaws.com',
+    # 'smtp_port': 587,
+    # 'smtp_username': os.environ.get('SMTP_USERNAME', 'YOUR_SES_USERNAME'),
+    # 'smtp_password': os.environ.get('SMTP_PASSWORD', 'YOUR_SES_PASSWORD'),
+    # ------------------------------------------------------------------
+
     'email_from': 'bulletproof@yourdomain.com',
-    'email_to': ['harish@yourdomain.com'],  # List of recipients
+    'email_to': ['your-email@gmail.com'],  # List of recipients
+
     
     # Strategy Thresholds (v7.3)
     'bull_threshold': 0.45,
