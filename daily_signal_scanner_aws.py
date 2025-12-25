@@ -69,8 +69,10 @@ CONFIG = {
     # ------------------------------------------------------------------
     'smtp_server': 'smtp.gmail.com',
     'smtp_port': 587,
-    'smtp_username': 'your-email@gmail.com',
-    'smtp_password': 'xxxx xxxx xxxx xxxx',  # App Password (not login password)
+    'smtp_server': 'smtp.gmail.com',
+    'smtp_port': 587,
+    'smtp_username': 'harishravi86@gmail.com', 
+    'smtp_password': os.environ.get('GMAIL_APP_PASSWORD', 'YOUR_APP_PASSWORD_HERE'),  # Load from Env Var
     
     # ------------------------------------------------------------------
     # OPTION 2: AWS SES (Production)
@@ -81,7 +83,7 @@ CONFIG = {
     # ------------------------------------------------------------------
 
     'email_from': 'bulletproof@yourdomain.com',
-    'email_to': ['your-email@gmail.com'],  # List of recipients
+    'email_to': ['harishravi86@gmail.com'],  # List of recipients
 
     
     # Strategy Thresholds (v7.3)
