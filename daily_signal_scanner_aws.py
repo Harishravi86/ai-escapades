@@ -671,7 +671,7 @@ def run_scanner(test_email: bool = False):
     
     print("=" * 70)
     print("BULLETPROOF v7.3 - AWS DAILY SCANNER")
-    print(f"Date: {{today.strftime('%Y-%m-%d %H:%M:%S')}}")
+    print(f"Date: {today.strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 70)
     
     # Check if market is open (Monday-Friday)
@@ -691,15 +691,15 @@ def run_scanner(test_email: bool = False):
         vix = float(safe_series(vix_data['Close']).iloc[-1]) if len(vix_data) > 0 else 20.0
         latest_date = spy.index[-1]
         
-        print(f"Latest data: {{latest_date.strftime('%Y-%m-%d')}}")
+        print(f"Latest data: {latest_date.strftime('%Y-%m-%d')}")
         
     except Exception as e:
-        print(f"ERROR fetching data: {{e}}")
+        print(f"ERROR fetching data: {e}")
         # Send error email
         send_email(
             subject=f"⚠️ Bulletproof v7.3 - Data Error",
-            html_body=f"<p>Failed to fetch market data: {{e}}</p>",
-            text_body=f"Failed to fetch market data: {{e}}"
+            html_body=f"<p>Failed to fetch market data: {e}</p>",
+            text_body=f"Failed to fetch market data: {e}"
         )
         return
     
@@ -716,10 +716,10 @@ def run_scanner(test_email: bool = False):
     
     # Format email
     subject_emoji = '🟢' if signal['signal'] == 'BUY' else ('🔴' if signal['exit_signal'] else '⚪')
-    subject = f"{{subject_emoji}} Bulletproof v7.3: {{signal['signal']}} ({{signal['conviction']}}) - SPY ${{technicals['price']:.2f}}"
+    subject = f"{subject_emoji} Bulletproof v7.3: {signal['signal']} ({signal['conviction']}) - SPY ${technicals['price']:.2f}"
     
     if signal['exit_signal']:
-        subject = f"🔴 Bulletproof v7.3: EXIT SIGNAL ({{signal['exit_reason']}}) - SPY ${{technicals['price']:.2f}}"
+        subject = f"🔴 Bulletproof v7.3: EXIT SIGNAL ({signal['exit_reason']}) - SPY ${technicals['price']:.2f}"
     
     html_body = format_email_html(today, technicals, celestial, signal, vix)
     text_body = format_email_text(today, technicals, celestial, signal, vix)
@@ -734,9 +734,9 @@ def run_scanner(test_email: bool = False):
         print("\n❌ Email sending failed")
     
     # Print summary to console
-    print(f"\nSIGNAL: {{signal['signal']}} ({{signal['conviction']}})")
-    print(f"Size: {{signal['size']*100:.0f}}%")
-    print(f"Bull Prob: {{signal['bull_prob']*100:.0f}}%")
+    print(f"\nSIGNAL: {signal['signal']} ({signal['conviction']})")
+    print(f"Size: {signal['size']*100:.0f}%")
+    print(f"Bull Prob: {signal['bull_prob']*100:.0f}%")
 
 
 # =============================================================================
