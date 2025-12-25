@@ -57,6 +57,16 @@ try:
 except ImportError:
     YF_AVAILABLE = False
 
+try:
+    from celestial_engine import CelestialEngine
+    CELESTIAL_AVAILABLE = True
+except ImportError:
+    CELESTIAL_AVAILABLE = False
+    print("Warning: celestial_engine.py not found. Using fallback.")
+    class CelestialEngine: # Fallback dummy
+        def get_features(self, d): return {}
+
+
 
 def safe_series(col) -> pd.Series:
     """Ensure DataFrame column behaves as Series."""
@@ -442,80 +452,9 @@ class SharktoothDetector:
 
 
 # =============================================================================
-# CELESTIAL ENGINE (unchanged from v6.2)
+# CELESTIAL ENGINE (Imported from external module)
 # =============================================================================
 
-class CelestialEngine:
-    def __init__(self):
-        self.enabled = EPHEM_AVAILABLE
-        self._cache = {}
-    
-    def get_features(self, date_str: str) -> Dict:
-        if not self.enabled:
-            return self._empty_features()
-        
-        if date_str in self._cache:
-            return self._cache[date_str]
-        
-        try:
-            observer = ephem.Observer()
-            observer.date = date_str
-            
-            bodies = {
-                'Sun': ephem.Sun(), 'Moon': ephem.Moon(),
-                'Saturn': ephem.Saturn(), 'Uranus': ephem.Uranus()
-            }
-            
-            positions = {}
-            for name, body in bodies.items():
-                body.compute(observer)
-                ecl = ephem.Ecliptic(body)
-                positions[name] = math.degrees(ecl.lon)
-            
-            features = {
-                'sun_opp_saturn': self._check_aspect(positions, 'Sun', 'Saturn', 180, 5),
-                'moon_opp_uranus': self._check_aspect(positions, 'Moon', 'Uranus', 180, 8),
-                'sun_saturn_sep': self._get_sep(positions, 'Sun', 'Saturn'),
-                'moon_uranus_sep': self._get_sep(positions, 'Moon', 'Uranus'),
-                # Validated "Option A" Window: New Moon +/- 2 days (~25 deg)
-                # Sep 0-25 or 335-360
-                'is_lunar_window': self._is_new_moon_window(positions['Sun'], positions['Moon'], 25),
-            }
-            
-            self._cache[date_str] = features
-            return features
-            
-        except Exception:
-            return self._empty_features()
-    
-    def _check_aspect(self, positions, p1, p2, target, orb):
-        diff = abs(positions[p1] - positions[p2])
-        if diff > 180:
-            diff = 360 - diff
-        return abs(diff - target) <= orb
-        
-    def _get_sep(self, positions, p1, p2):
-        diff = abs(positions[p1] - positions[p2])
-        if diff > 180:
-            diff = 360 - diff
-        return diff
-    
-    def _is_new_moon_window(self, sun_pos, moon_pos, threshold_deg):
-        diff = moon_pos - sun_pos
-        # Normalize to 0-360
-        while diff < 0: diff += 360
-        while diff >= 360: diff -= 360
-        
-        return diff < threshold_deg or diff > (360 - threshold_deg)
-    
-    def _empty_features(self):
-        return {
-            'sun_opp_saturn': False, 
-            'moon_opp_uranus': False,
-            'sun_saturn_sep': 0.0,
-            'moon_uranus_sep': 0.0,
-            'is_lunar_window': False
-        }
 
 
 # =============================================================================
@@ -690,6 +629,13 @@ class BulletproofStrategyV72:
                     signal_size = 0.5
                     signal_conviction = "MEDIUM"
                 
+                # Apply Celestial Position Sizing (Stellium Risk)
+                pos_sizer = cel.get('position_sizer', 1.0)
+                if pos_sizer < 1.0 and signal_size > 0:
+                    signal_size *= pos_sizer
+                    if verbose and date.year >= 2020:
+                         print(f"  > CELESTIAL RISK: Reducing size by {(1-pos_sizer):.0%} (Regime: {cel.get('spread_regime', 'Unknown')})")
+
                 if signal_size > 0:
                     # Moon-Uranus (Aggressive)
                     if cel['moon_opp_uranus'] and 18 < vix < 28:
@@ -798,30 +744,34 @@ class BulletproofStrategyV72:
 
                 if exit_signal:
                     cash += shares * price
-                    ret = (price - entry_price) / entry_price
+                    exit_date = date
+                    trade_return = (price - entry_price) / entry_price
+                    
                     self.trade_log.append({
                         'entry_date': entry_date,
-                        'exit_date': date,
-                        'return': ret,
+                        'exit_date': exit_date,
+                        'entry_price': entry_price,
+                        'exit_price': price,
+                        'size': size, # Log the size used!
+                        'return': trade_return,
                         'reason': reason,
                         'partial_taken': partial_exit_taken,
-                        'overridden': override_active # Should be False if we exited, but interesting metadata
+                        'overridden': override_active
                     })
-                    if verbose and date.year >= 2020:
-                        print(f"[{date.strftime('%Y-%m-%d')}] SELL @ ${price:.2f} ({reason}, {ret:+.1%})")
+                    
                     shares = 0
-                    cooldown = 3
+                    if verbose and date.year >= 2020:
+                        print(f"[{date.strftime('%Y-%m-%d')}] SELL @ ${price:.2f} ({reason}) Return: {trade_return:.2%}")
             
             equity = cash + shares * price
             equity_curve.append({'date': date, 'equity': equity})
             if equity > peak_equity: peak_equity = equity
             max_drawdown = max(max_drawdown, (peak_equity - equity) / peak_equity)
         
-        # Close final position
-        if shares > 0:
-            cash += shares * close.iloc[-1]
-            
-        total_return = (cash - initial_capital) / initial_capital
+        # Final cleanup
+        final_value = cash + (shares * close.iloc[-1] if shares > 0 else 0)
+        total_return = (final_value - initial_capital) / initial_capital
+        
         years = len(self.signal_data) / 252
         cagr = (cash / initial_capital) ** (1 / years) - 1 if years > 0 else 0
         
