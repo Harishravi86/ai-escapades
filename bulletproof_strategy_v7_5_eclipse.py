@@ -594,6 +594,50 @@ class TechnicalEngine:
             ).astype(int)
         
         # =================================================================
+        # 7c. VOLUME FEATURES - Orthogonal to Price & Volatility
+        # =================================================================
+        # Relative Volume = Current Volume / Average Volume
+        # High rel_vol + oversold = panic selling (capitulation)
+        # Low rel_vol + overbought = weak rally (distribution)
+        vol_ma_20 = volume.rolling(20).mean()
+        vol_ma_50 = volume.rolling(50).mean()
+        
+        rel_vol = volume / vol_ma_20.replace(0, 1)
+        features['REL_VOL'] = rel_vol
+        
+        # Volume spike detection
+        vol_std = volume.rolling(20).std()
+        features['VOL_SPIKE'] = (volume > (vol_ma_20 + 2 * vol_std)).astype(int)
+        features['VOL_ULTRA_SPIKE'] = (volume > (vol_ma_20 + 3 * vol_std)).astype(int)
+        features['VOL_DRY'] = (volume < vol_ma_20 * 0.5).astype(int)  # Below average
+        
+        # Volume trend (expanding or contracting)
+        features['VOL_TREND'] = (vol_ma_20 / vol_ma_50.replace(0, 1))
+        features['VOL_EXPANDING'] = (features['VOL_TREND'] > 1.1).astype(int)
+        
+        # Panic Volume: Oversold + Volume Spike (strongest reversals)
+        if 'RSI_2_oversold' in features.columns:
+            features['PANIC_VOLUME'] = (
+                (features['RSI_2_oversold'] == 1) & 
+                (features['VOL_SPIKE'] == 1)
+            ).astype(int)
+            
+            # Triple confirmation: Oversold + High Vol + High ATR
+            if 'VOL_expansion' in features.columns:
+                features['TRIPLE_CAPITULATION'] = (
+                    (features['RSI_2_oversold'] == 1) & 
+                    (features['VOL_SPIKE'] == 1) &
+                    (features['VOL_expansion'] == 1)
+                ).astype(int)
+        
+        # Distribution: Overbought + Low Volume (weak rally)
+        if 'RSI_2_overbought' in features.columns:
+            features['DISTRIBUTION'] = (
+                (features['RSI_2_overbought'] == 1) & 
+                (features['VOL_DRY'] == 1)
+            ).astype(int)
+        
+        # =================================================================
         # 8. PRICE ACTION
         # =================================================================
         features['RET_1d'] = close.pct_change(1) * 100
