@@ -557,6 +557,43 @@ class TechnicalEngine:
         features['MFI_overbought'] = (mfi > 80).astype(int)
         
         # =================================================================
+        # 7b. ATR (Average True Range) - VOLATILITY FEATURES
+        # =================================================================
+        # ATR measures volatility, orthogonal to price-level features
+        # Key insight: Oversold + HIGH volatility = capitulation (better entry)
+        atr_14 = ta.atr(high, low, close, length=14)
+        atr_50 = ta.atr(high, low, close, length=50)
+        
+        # Normalized ATR (as % of price)
+        atr_pct = (atr_14 / close) * 100
+        features['ATR_14_pct'] = atr_pct
+        
+        # ATR Ratio (short-term vs long-term volatility)
+        # >1 = volatility expanding (fear), <1 = volatility contracting (calm)
+        atr_ratio = atr_14 / atr_50.replace(0, 0.0001)
+        features['ATR_ratio'] = atr_ratio
+        
+        # Volatility regimes
+        features['VOL_expansion'] = (atr_ratio > 1.2).astype(int)  # Fear/Panic
+        features['VOL_contraction'] = (atr_ratio < 0.8).astype(int)  # Calm
+        features['VOL_extreme'] = (atr_pct > atr_pct.rolling(50).mean() + atr_pct.rolling(50).std()).astype(int)
+        
+        # Capitulation signal: Oversold + High Volatility (the best entries)
+        # Research: Mean reversion works best when volatility is HIGH (forced selling)
+        if 'RSI_2_oversold' in features.columns:
+            features['CAPITULATION'] = (
+                (features['RSI_2_oversold'] == 1) & 
+                (features['VOL_expansion'] == 1)
+            ).astype(int)
+            
+        # Exit signal: Overbought + Low Volatility (complacency)
+        if 'RSI_2_overbought' in features.columns:
+            features['COMPLACENCY'] = (
+                (features['RSI_2_overbought'] == 1) & 
+                (features['VOL_contraction'] == 1)
+            ).astype(int)
+        
+        # =================================================================
         # 8. PRICE ACTION
         # =================================================================
         features['RET_1d'] = close.pct_change(1) * 100
@@ -567,34 +604,6 @@ class TechnicalEngine:
             features[f'DD_{period}d'] = (close - rolling_max) / rolling_max * 100
             rolling_min = close.rolling(period).min()
             features[f'RALLY_{period}d'] = (close - rolling_min) / rolling_min * 100
-        
-        # =================================================================
-        # 8b. IBS (Internal Bar Strength) - Research Sharpe 2.11
-        # =================================================================
-        # IBS = (Close - Low) / (High - Low)
-        # Measures where price closed within the day's range
-        # IBS < 0.3 = closed near daily low (mean reversion buy signal)
-        # IBS > 0.7 = closed near daily high (potential reversal)
-        bar_range = high - low
-        bar_range = bar_range.replace(0, 0.0001)  # Prevent division by zero
-        ibs = (close - low) / bar_range
-        
-        features['IBS'] = ibs
-        features['IBS_oversold'] = (ibs < 0.3).astype(int)  # Near low
-        features['IBS_extreme'] = (ibs < 0.15).astype(int)  # Very near low
-        features['IBS_overbought'] = (ibs > 0.7).astype(int)  # Near high
-        features['IBS_extreme_high'] = (ibs > 0.85).astype(int)  # Very near high
-        
-        # IBS + BB Combination (Research: Sharpe 2.11)
-        # Entry: Close < BB_Lower AND IBS < 0.3
-        if 'BB_20_oversold' in features.columns:
-            features['IBS_BB_COMBO'] = (
-                (features['IBS_oversold'] == 1) & (features['BB_20_oversold'] == 1)
-            ).astype(int)
-            
-            features['IBS_BB_EXTREME'] = (
-                (features['IBS_extreme'] == 1) & (features['BB_20_sharktooth'] == 1)
-            ).astype(int)
         
         # =================================================================
         # 9. DAILY RETURN FEATURES (Pine Script)
