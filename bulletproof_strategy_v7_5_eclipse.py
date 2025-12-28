@@ -569,6 +569,34 @@ class TechnicalEngine:
             features[f'RALLY_{period}d'] = (close - rolling_min) / rolling_min * 100
         
         # =================================================================
+        # 8b. IBS (Internal Bar Strength) - Research Sharpe 2.11
+        # =================================================================
+        # IBS = (Close - Low) / (High - Low)
+        # Measures where price closed within the day's range
+        # IBS < 0.3 = closed near daily low (mean reversion buy signal)
+        # IBS > 0.7 = closed near daily high (potential reversal)
+        bar_range = high - low
+        bar_range = bar_range.replace(0, 0.0001)  # Prevent division by zero
+        ibs = (close - low) / bar_range
+        
+        features['IBS'] = ibs
+        features['IBS_oversold'] = (ibs < 0.3).astype(int)  # Near low
+        features['IBS_extreme'] = (ibs < 0.15).astype(int)  # Very near low
+        features['IBS_overbought'] = (ibs > 0.7).astype(int)  # Near high
+        features['IBS_extreme_high'] = (ibs > 0.85).astype(int)  # Very near high
+        
+        # IBS + BB Combination (Research: Sharpe 2.11)
+        # Entry: Close < BB_Lower AND IBS < 0.3
+        if 'BB_20_oversold' in features.columns:
+            features['IBS_BB_COMBO'] = (
+                (features['IBS_oversold'] == 1) & (features['BB_20_oversold'] == 1)
+            ).astype(int)
+            
+            features['IBS_BB_EXTREME'] = (
+                (features['IBS_extreme'] == 1) & (features['BB_20_sharktooth'] == 1)
+            ).astype(int)
+        
+        # =================================================================
         # 9. DAILY RETURN FEATURES (Pine Script)
         # =================================================================
         daily_return = close.pct_change(1)
