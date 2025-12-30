@@ -664,7 +664,38 @@ class TechnicalEngine:
         ).astype(int)
         
         # =================================================================
-        # 10. COMPOSITE SCORES
+        # 9b. DAY 5 CALENDAR FEATURES (Research: Volmageddon, Japan Crash)
+        # =================================================================
+        # Day of month from index
+        day_of_month = df.index.day
+        month = df.index.month
+        
+        # Basic Day 5 flag
+        features['DAY_5'] = (day_of_month == 5).astype(int)
+        features['DAY_5_WINDOW'] = (day_of_month.isin([4, 5, 6])).astype(int)
+        
+        # Dangerous 5ths (historically bearish)
+        # Aug 5: -0.62% avg, 27.8% win rate (Japan Crash 2024: -2.91%)
+        # Feb 5: Volmageddon 2018 -4.18%
+        features['DAY_5_AUG'] = ((day_of_month == 5) & (month == 8)).astype(int)
+        features['DAY_5_FEB'] = ((day_of_month == 5) & (month == 2)).astype(int)
+        features['DAY_5_DANGER'] = ((day_of_month == 5) & (month.isin([2, 8]))).astype(int)
+        
+        # Bullish 5ths (historically positive)
+        # Oct 5: +0.58% avg, 72.2% win rate
+        # Nov 5: +0.26% avg, 72.2% win rate
+        features['DAY_5_OCT'] = ((day_of_month == 5) & (month == 10)).astype(int)
+        features['DAY_5_NOV'] = ((day_of_month == 5) & (month == 11)).astype(int)
+        features['DAY_5_BULLISH'] = ((day_of_month == 5) & (month.isin([10, 11, 12]))).astype(int)
+        
+        # First trading day of month (strongest edge: +0.178%, 61.7% win rate)
+        features['FIRST_TRADING_DAY'] = (df.groupby([df.index.year, df.index.month]).cumcount() == 0).astype(int)
+        
+        # Turn of Month (Last 3 + First 2 days)
+        # This was proven in v8.0 research: +0.097% daily (4x edge)
+        features['TURN_OF_MONTH'] = (
+            (day_of_month <= 2) | (day_of_month >= 28)
+        ).astype(int)
         # =================================================================
         oversold_cols = [c for c in features.columns if 'oversold' in c.lower()]
         sharktooth_bull_cols = [c for c in features.columns if 'sharktooth' in c.lower() and 'bear' not in c.lower()]
