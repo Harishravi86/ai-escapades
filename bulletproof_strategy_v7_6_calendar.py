@@ -703,6 +703,7 @@ class TechnicalEngine:
         features['TURN_OF_MONTH'] = (
             (day_of_month <= 2) | (day_of_month >= 28)
         ).astype(int)
+        
         # =================================================================
         oversold_cols = [c for c in features.columns if 'oversold' in c.lower()]
         sharktooth_bull_cols = [c for c in features.columns if 'sharktooth' in c.lower() and 'bear' not in c.lower()]
